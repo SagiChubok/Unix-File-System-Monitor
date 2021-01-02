@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <libcli.h>
 
+// String sub-functions
 char **str_splitter(char *str, size_t *size)
 {
     // split string to array of strings, seperator is ' '
@@ -69,6 +70,85 @@ void str_concat(char **s1, const char *s2)
         }
         new_str[s1_len] = '\0';
         *s1 = new_str;
+    }
+    else
+        exit(EXIT_FAILURE);
+}
+
+char *createCommand(char *html_data)
+{
+    // Create command that make system call of html page
+
+    char start[] = "<!DOCTYPE html><html lang='en'>  <head>    <meta charset='UTF-8' />    <meta name='viewport' content='width=device-width, initial-scale=1.0' />    <meta http-equiv='refresh' content='10' />    <title>File System Monitor</title>     <style>      * {        margin: 0;        padding: 0;        box-sizing: border-box;      }      header,      main,      footer,      nav,      div {        display: block;      }      body {        margin: 0;        background: black;      }      #wrapper{        padding: 5vh 5vw;      }      ul {        font-family: monospace;        font-weight: bold;        font-size: 3.5vh;        margin: 0 0 5vh 0;        padding: 0;        line-height: 1;        color: limegreen;        text-shadow: 0px 0px 10px limegreen;        list-style-type:none;      }      #message {        position: fixed;        font-family: monospace;        font-weight: bold;        text-transform: uppercase;        font-size: 4vh;        background: red;        box-shadow: 0 0 30px red;        text-shadow: 0 0 20px white;        color: white;        width: 20vw;        height: 15vh;        top: 50%;        left: 50%;        margin-right: -50%;        transform: translate(-50%, -50%);        text-align: center;        min-width: 200px;        animation-name: blink;        animation-duration: 3.0s;        animation-iteration-count: infinite;        animation-direction: alternate;        animation-timing-function: linear;      }      @keyframes blink {        0% {          opacity: 0;        }        100% {          opacity: 1;        }      }      p{        font-size: 2.3vh;         position: relative;        top:50%;        left: 50%;        transform: translate(-50%, -50%);      }      footer {        background-color: rgb(0, 0, 0);        position: fixed;        box-shadow: 0px 0px 5px limegreen;        border-top: 1px solid limegreen;        width: 100%;        bottom: 0px;        padding:5px 0px 5px 5px;        color: limegreen;        font-family: monospace;        font-weight: bold;        font-size: 3vh; }    </style>      </head>  <body>      <div id='wrapper'>        <div id='message'>            <p>Scanning...<br>Fetching more data in <span id='countdowntimer'>10 </span> Seconds</p>        </div>        <div id='console'> ";
+    char end[] = "</div>    </div>    <footer>Sagi Chubok and Linoy Chubok, Unix System Programming Course.</footer>        <script type='text/javascript'>        var timeleft = 10;        var downloadTimer = setInterval(function(){        timeleft--;        document.getElementById('countdowntimer').textContent = timeleft;        if(timeleft <= 0)            clearInterval(downloadTimer);        },1000);    </script></body></html>";
+
+    int data_len = strlen(html_data);
+    int fsize = data_len + strlen(start) + strlen(end) + 2 + 5 + 27 + 1;
+
+    // Allocate dynamic memory and implement the data
+    char *copy = malloc(fsize);
+    if (copy != NULL)
+    {
+        size_t i = 0;
+        char *ptr = NULL;
+
+        copy[i++] = 'e';
+        copy[i++] = 'c';
+        copy[i++] = 'h';
+        copy[i++] = 'o';
+        copy[i++] = ' ';
+        copy[i++] = '"';
+
+        ptr = start;
+        while (*ptr)
+        {
+            copy[i++] = *ptr;
+            ptr++;
+        }
+
+        ptr = html_data;
+        while (*ptr)
+        {
+            copy[i++] = *ptr;
+            ptr++;
+        }
+
+        ptr = end;
+        while (*ptr)
+        {
+            copy[i++] = *ptr;
+            ptr++;
+        }
+        copy[i++] = '"';
+        copy[i++] = ' ';
+        copy[i++] = '>';
+        copy[i++] = ' ';
+        copy[i++] = '/';
+        copy[i++] = 'v';
+        copy[i++] = 'a';
+        copy[i++] = 'r';
+        copy[i++] = '/';
+        copy[i++] = 'w';
+        copy[i++] = 'w';
+        copy[i++] = 'w';
+        copy[i++] = '/';
+        copy[i++] = 'h';
+        copy[i++] = 't';
+        copy[i++] = 'm';
+        copy[i++] = 'l';
+        copy[i++] = '/';
+        copy[i++] = 'i';
+        copy[i++] = 'n';
+        copy[i++] = 'd';
+        copy[i++] = 'e';
+        copy[i++] = 'x';
+        copy[i++] = '.';
+        copy[i++] = 'h';
+        copy[i++] = 't';
+        copy[i++] = 'm';
+        copy[i++] = 'l';
+        copy[i] = '\0';
+        return copy;
     }
     else
         exit(EXIT_FAILURE);
