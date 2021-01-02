@@ -53,6 +53,27 @@ char **str_splitter(char *str, size_t *size)
     return array;
 }
 
+void str_concat(char **s1, const char *s2)
+{
+    //Add two strings together
+
+    int s1_len = strlen(*s1);
+    int s2_len = strlen(s2);
+    int len = s1_len + s2_len + 1;
+    char *new_str = (char *)realloc(*s1, len); // +1 for the null-terminator
+    if (new_str != NULL)
+    {
+        for (int i = 0; i < s2_len; i++)
+        {
+            new_str[s1_len++] = s2[i];
+        }
+        new_str[s1_len] = '\0';
+        *s1 = new_str;
+    }
+    else
+        exit(EXIT_FAILURE);
+}
+
 void inotify(int argc, char **argv, char *address)
 {
     /* Read all available inotify events from the file descriptor 'fd'.
