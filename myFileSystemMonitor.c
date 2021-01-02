@@ -154,6 +154,150 @@ char *createCommand(char *html_data)
         exit(EXIT_FAILURE);
 }
 
+// Notify events (client)
+static void handle_events(int fd, int *wd, int argc, char *argv[], char **html_data, int *html_data_cnt, int *clientSocket, struct sockaddr_in *serverAddr)
+{
+
+    /* Some systems cannot read integer variables if they are not
+	   properly aligned. On other systems, incorrect alignment may
+	   decrease performance. Hence, the buffer used for reading from
+	   the inotify file descriptor should have the same alignment as
+	   struct inotify_event. */
+
+    /* Current time */
+    char date_time[26];
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+
+    char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
+    const struct inotify_event *event;
+    int i;
+    ssize_t len;
+    char *ptr;
+
+    /* Loop while events can be read from inotify file descriptor. */
+
+    for (;;)
+    {
+        /* Read some events. */
+
+        len = read(fd, buf, sizeof buf);
+        if (len == -1 && errno != EAGAIN)
+        {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
+
+        /* If the nonblocking read() found no events to read, then
+		   it returns -1 with errno set to EAGAIN. In that case,
+		   we exit the loop. */
+
+        if (len <= 0)
+            break;
+
+        /* Loop over all events in the buffer */
+        for (ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len)
+        {
+
+            event = (const struct inotify_event *)ptr;
+
+            // Skip is open
+            if (event->mask & IN_OPEN)
+                continue;
+
+            // Skip DIR
+            if (event->mask & IN_ISDIR)
+                continue;
+
+            // Reset the html data
+            if (*html_data_cnt == HTML_DATA_LIMIT)
+            {
+                *html_data_cnt = 0;
+                free(*html_data);
+                *html_data = malloc((strlen(" ") + 1) * sizeof(char));
+                if (*html_data == NULL)
+                    exit(EXIT_FAILURE);
+                strcpy(*html_data, " ");
+            }
+
+            /* Print the name of the file */
+            char *udp_data = malloc((strlen("FILE ACCESSED: ") + 1) * sizeof(char));
+            if (udp_data == NULL)
+                exit(EXIT_FAILURE);
+
+            strcpy(udp_data, "FILE ACCESSED: ");
+
+            str_concat(&*html_data, "<ul> <li>FILE ACCESSED: ");
+
+            for (i = 0; i < argc; ++i)
+            {
+                if (wd[i] == event->wd)
+                {
+                    str_concat(&udp_data, argv[i]);
+                    str_concat(&udp_data, "/");
+
+                    str_concat(&*html_data, argv[i]);
+                    str_concat(&*html_data, "/");
+
+                    break;
+                }
+            }
+
+            /* Print the name of the file */
+
+            if (event->len)
+            {
+                str_concat(&udp_data, event->name);
+                str_concat(&udp_data, "\n");
+
+                str_concat(&*html_data, event->name);
+                str_concat(&*html_data, "</li>");
+            }
+
+            str_concat(&udp_data, "ACCESS: ");
+
+            str_concat(&*html_data, "<li>ACCESS: ");
+
+            /* Print event type */
+
+            if (event->mask & IN_CLOSE_NOWRITE)
+            {
+                str_concat(&udp_data, "NO_WRITE\n");
+                str_concat(&*html_data, "NO_WRITE</li>");
+            }
+            else if (event->mask & IN_CLOSE_WRITE)
+            {
+                str_concat(&udp_data, "WRITE\n");
+                str_concat(&*html_data, "WRITE</li>");
+            }
+
+            /* Current Time */
+
+            strftime(date_time, 26, "%d-%m-%Y %H:%M:%S\n\n", tm);
+
+            str_concat(&udp_data, "TIME OF ACCESS: ");
+            str_concat(&udp_data, date_time);
+
+            sendto(*clientSocket, udp_data, strlen(udp_data),
+                   MSG_CONFIRM, (const struct sockaddr *)&*serverAddr,
+                   sizeof(*serverAddr));
+
+            free(udp_data);
+
+            str_concat(&*html_data, "<li>TIME OF ACCESS: ");
+            str_concat(&*html_data, date_time);
+            str_concat(&*html_data, "</li> </ul>");
+
+            // Update html data count
+            ++*html_data_cnt;
+        }
+        char *command = createCommand(*html_data);
+        system(command);
+        free(command);
+
+    }
+}
+
 void inotify(int argc, char **argv, char *address)
 {
     /* Read all available inotify events from the file descriptor 'fd'.
