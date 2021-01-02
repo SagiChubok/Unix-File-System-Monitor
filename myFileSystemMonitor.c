@@ -18,6 +18,41 @@
 #include <pthread.h>
 #include <libcli.h>
 
+char **str_splitter(char *str, size_t *size)
+{
+    // split string to array of strings, seperator is ' '
+
+    char **array = NULL;
+    char *p;
+    size_t items = 0, q;
+    const char *sepa = " ";
+
+    p = str;
+    for (;;)
+    {
+        p += strspn(p, sepa);
+        if (!(q = strcspn(p, sepa)))
+            break;
+        if (q)
+        {
+            array = realloc(array, (items + 1) * sizeof(char *));
+            if (array == NULL)
+                exit(EXIT_FAILURE);
+
+            array[items] = malloc(q + 1);
+            if (array[items] == NULL)
+                exit(EXIT_FAILURE);
+
+            strncpy(array[items], p, q);
+            array[items][q] = 0;
+            items++;
+            p += q;
+        }
+    }
+    *size = items;
+    return array;
+}
+
 
 int main(int argc, char **argv)
 {
