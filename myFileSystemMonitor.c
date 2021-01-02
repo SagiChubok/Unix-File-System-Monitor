@@ -217,7 +217,35 @@ void inotify(int argc, char **argv, char *address)
     fds[1].fd = fd;
     fds[1].events = POLLIN;
 
+    /* Client */
+
+    int clientSocket = socket(AF_INET, SOCK_DGRAM, 0); // UDP
+    if (clientSocket < 0)
+    {
+        perror("Error in connection\n");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in serverAddr = {'\0'};
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(PORT);
+    serverAddr.sin_addr.s_addr = inet_addr(address);
+
+    if (connect(clientSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    {
+        perror("Error in connection\n\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Wait for events and/or terminal input */
+
     printf("Listening for events.\n");
+
+    char *html_data = malloc((strlen(" ") + 1) * sizeof(char));
+    if (html_data == NULL)
+        exit(EXIT_FAILURE);
+    strcpy(html_data, " ");
+    int html_data_cnt = 0;
 
     while (1)
     {
@@ -262,6 +290,10 @@ void inotify(int argc, char **argv, char *address)
     /* Close inotify file descriptor */
     close(fd);
     free(wd);
+
+    /* Close client socket */
+    close(clientSocket);
+    free(html_data);
 }
 
 int main(int argc, char **argv)
