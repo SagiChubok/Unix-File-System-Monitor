@@ -272,8 +272,9 @@ void inotify(int argc, char **argv, char *address)
             if (fds[1].revents & POLLIN)
             {
                 /* Inotify events are available */
-
-                //handle_events(fd, wd, argc, argv);
+                
+                //TODO: need to implement this 
+                //handle_events(fd, wd, argc, argv, &html_data, &html_data_cnt, &clientSocket, &serverAddr);
             }
         }
     }
