@@ -76,6 +76,10 @@ int main(int argc, char **argv)
 
         if (directory != NULL && address != NULL)
         {
+            size_t cnt = 0;
+            char **directories = str_splitter(directory, &cnt);
+            // TODO: need to free directories (dynamic allocated)
+
             exit(EXIT_SUCCESS);
         }
     }
