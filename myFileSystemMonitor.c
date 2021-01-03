@@ -18,6 +18,9 @@
 #include <pthread.h>
 #include <libcli.h>
 
+#define PORT 8888
+#define HTML_DATA_LIMIT 1000
+
 // String sub-functions
 char **str_splitter(char *str, size_t *size)
 {
