@@ -21,6 +21,10 @@
 #define PORT 8888
 #define HTML_DATA_LIMIT 1000
 
+// Globals
+int flag = 0;
+struct cli_def *cli;
+
 // String sub-functions
 char **str_splitter(char *str, size_t *size)
 {
