@@ -157,6 +157,47 @@ char *createCommand(char *html_data)
         exit(EXIT_FAILURE);
 }
 
+// libcli (server)
+void *my_libcli(void *arg)
+{
+    char *address = (char *)arg;
+    struct sockaddr_in servaddr;
+    int on = 1, x, s;
+
+    // Must be called first to setup data structures
+    cli = cli_init();
+
+    // Set the hostname (shown in the the prompt)
+    cli_set_hostname(cli, "FileSystemMonitor");
+
+    // Set up a few simple one-level commands
+    cli_register_command(cli, NULL, "backtrace", cmd_backtrace, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
+
+    // Create a socket
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+    // Listen on port 8888
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT);
+    servaddr.sin_addr.s_addr = inet_addr(address);
+
+    bind(s, (struct sockaddr *)&servaddr, sizeof(servaddr));
+
+    // Wait for a connection
+    listen(s, 50);
+
+    while ((x = accept(s, NULL, 0)))
+    {
+        // Pass the connection off to libcli
+        cli_loop(cli, x);
+        close(x);
+    }
+
+    return NULL;
+}
+
 // Notify events (client)
 static void handle_events(int fd, int *wd, int argc, char *argv[], char **html_data, int *html_data_cnt, int *clientSocket, struct sockaddr_in *serverAddr)
 {
