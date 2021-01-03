@@ -25,6 +25,14 @@
 int flag = 0;
 struct cli_def *cli;
 
+// Backtrace Command for libcli
+int cmd_backtrace(struct cli_def *cli, const char *command, char *argv[], int argc)
+{
+    cli_print(cli, "called %s with %s\r\n", __FUNCTION__, command);
+    flag = 1;
+    return CLI_OK;
+}
+
 // String sub-functions
 char **str_splitter(char *str, size_t *size)
 {
