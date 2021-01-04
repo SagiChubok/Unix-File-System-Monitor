@@ -449,6 +449,12 @@ void inotify(int argc, char **argv, char *address)
     fds[1].fd = fd;
     fds[1].events = POLLIN;
 
+    /* Server */
+
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, my_libcli, address);
+
+
     /* Client */
 
     int clientSocket = socket(AF_INET, SOCK_DGRAM, 0); // UDP
@@ -505,8 +511,7 @@ void inotify(int argc, char **argv, char *address)
             {
                 /* Inotify events are available */
                 
-                //TODO: need to implement this 
-                //handle_events(fd, wd, argc, argv, &html_data, &html_data_cnt, &clientSocket, &serverAddr);
+                handle_events(fd, wd, argc, argv, &html_data, &html_data_cnt, &clientSocket, &serverAddr);
             }
         }
     }
@@ -524,6 +529,9 @@ void inotify(int argc, char **argv, char *address)
     close(fd);
     free(wd);
 
+    /* Free data structures */
+    cli_done(cli);
+    
     /* Close client socket */
     close(clientSocket);
     free(html_data);
