@@ -71,10 +71,7 @@ Execute:
 <!-- PROGRAMMING LANGUAGES -->
 ## Programming Languages
 
-<img src="https://imgur.com/K2dSIsS.jpg" title="C" />
-<img src="https://imgur.com/W5eCDYW.jpg" title="HTML5" />
-<img src="https://imgur.com/jzqD88O.jpg" title="CSS3" />
-<img src="https://imgur.com/V6olpCS.jpg" title="JavaScript" />
+<img src="https://imgur.com/K2dSIsS.jpg" title="C" /> <img src="https://imgur.com/W5eCDYW.jpg" title="HTML5" /> <img src="https://imgur.com/jzqD88O.jpg" title="CSS3" /> <img src="https://imgur.com/V6olpCS.jpg" title="JavaScript" />
 <br />
 
 <!-- LICENSE -->
