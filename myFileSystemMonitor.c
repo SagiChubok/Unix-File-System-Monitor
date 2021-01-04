@@ -18,7 +18,10 @@
 #include <pthread.h>
 #include <libcli.h>
 
+// DEFAULT PORT VALUE
 #define PORT 8888
+
+// CHANGE THE VALUE FOR LIMIT THE LOGS INSIDE THE APACHE SERVER 
 #define HTML_DATA_LIMIT 1000
 
 // Globals
@@ -32,7 +35,6 @@ int cmd_backtrace(struct cli_def *cli, const char *command, char *argv[], int ar
     flag = 1;
     return CLI_OK;
 }
-
 void *my_backtrace(void *arg)
 {
     struct cli_def *cli = (struct cli_def *)arg;
@@ -43,6 +45,9 @@ void *my_backtrace(void *arg)
 
     nptrs = backtrace(buffer, 100);
     cli_print(cli, "backtrace() returned %d addresses\n", nptrs);
+
+    /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
+              would produce similar output to the following: */
 
     strings = backtrace_symbols(buffer, nptrs);
     if (strings == NULL)
@@ -93,10 +98,9 @@ char **str_splitter(char *str, size_t *size)
     *size = items;
     return array;
 }
-
 void str_concat(char **s1, const char *s2)
 {
-    //Add two strings together
+    //add two strings together
 
     int s1_len = strlen(*s1);
     int s2_len = strlen(s2);
@@ -114,10 +118,9 @@ void str_concat(char **s1, const char *s2)
     else
         exit(EXIT_FAILURE);
 }
-
 char *createCommand(char *html_data)
 {
-    // Create command that make system call of html page
+    //create command that make system call of html page
 
     char start[] = "<!DOCTYPE html><html lang='en'>  <head>    <meta charset='UTF-8' />    <meta name='viewport' content='width=device-width, initial-scale=1.0' />    <meta http-equiv='refresh' content='10' />    <title>File System Monitor</title>     <style>      * {        margin: 0;        padding: 0;        box-sizing: border-box;      }      header,      main,      footer,      nav,      div {        display: block;      }      body {        margin: 0;        background: black;      }      #wrapper{        padding: 5vh 5vw;      }      ul {        font-family: monospace;        font-weight: bold;        font-size: 3.5vh;        margin: 0 0 5vh 0;        padding: 0;        line-height: 1;        color: limegreen;        text-shadow: 0px 0px 10px limegreen;        list-style-type:none;      }      #message {        position: fixed;        font-family: monospace;        font-weight: bold;        text-transform: uppercase;        font-size: 4vh;        background: red;        box-shadow: 0 0 30px red;        text-shadow: 0 0 20px white;        color: white;        width: 20vw;        height: 15vh;        top: 50%;        left: 50%;        margin-right: -50%;        transform: translate(-50%, -50%);        text-align: center;        min-width: 200px;        animation-name: blink;        animation-duration: 3.0s;        animation-iteration-count: infinite;        animation-direction: alternate;        animation-timing-function: linear;      }      @keyframes blink {        0% {          opacity: 0;        }        100% {          opacity: 1;        }      }      p{        font-size: 2.3vh;         position: relative;        top:50%;        left: 50%;        transform: translate(-50%, -50%);      }      footer {        background-color: rgb(0, 0, 0);        position: fixed;        box-shadow: 0px 0px 5px limegreen;        border-top: 1px solid limegreen;        width: 100%;        bottom: 0px;        padding:5px 0px 5px 5px;        color: limegreen;        font-family: monospace;        font-weight: bold;        font-size: 3vh; }    </style>      </head>  <body>      <div id='wrapper'>        <div id='message'>            <p>Scanning...<br>Fetching more data in <span id='countdowntimer'>10 </span> Seconds</p>        </div>        <div id='console'> ";
     char end[] = "</div>    </div>    <footer>Sagi Chubok and Linoy Chubok, Unix System Programming Course.</footer>        <script type='text/javascript'>        var timeleft = 10;        var downloadTimer = setInterval(function(){        timeleft--;        document.getElementById('countdowntimer').textContent = timeleft;        if(timeleft <= 0)            clearInterval(downloadTimer);        },1000);    </script></body></html>";
@@ -196,10 +199,19 @@ char *createCommand(char *html_data)
 
 // Profiler
 void __attribute__((no_instrument_function)) __cyg_profile_func_enter(void *this_fn, void *call_site)
-{ /* Our manipulation */ }
-
+{ /* Our manipulation */
+}
 void __attribute__((no_instrument_function)) __cyg_profile_func_exit(void *this_fn, void *call_site)
-{ /* Our manipulation */ }
+{
+    /* Our manipulation */
+    if (flag)
+    {
+        flag = 0;
+        pthread_t thread_id;
+        pthread_create(&thread_id, NULL, my_backtrace, cli);
+        pthread_join(thread_id, NULL);
+    }
+}
 
 // libcli (server)
 void *my_libcli(void *arg)
@@ -385,7 +397,6 @@ static void handle_events(int fd, int *wd, int argc, char *argv[], char **html_d
 
     }
 }
-
 void inotify(int argc, char **argv, char *address)
 {
     /* Read all available inotify events from the file descriptor 'fd'.
@@ -454,7 +465,6 @@ void inotify(int argc, char **argv, char *address)
     pthread_t thread_id;
     pthread_create(&thread_id, NULL, my_libcli, address);
 
-
     /* Client */
 
     int clientSocket = socket(AF_INET, SOCK_DGRAM, 0); // UDP
@@ -510,7 +520,7 @@ void inotify(int argc, char **argv, char *address)
             if (fds[1].revents & POLLIN)
             {
                 /* Inotify events are available */
-                
+
                 handle_events(fd, wd, argc, argv, &html_data, &html_data_cnt, &clientSocket, &serverAddr);
             }
         }
@@ -531,7 +541,7 @@ void inotify(int argc, char **argv, char *address)
 
     /* Free data structures */
     cli_done(cli);
-    
+
     /* Close client socket */
     close(clientSocket);
     free(html_data);
