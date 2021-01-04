@@ -169,6 +169,10 @@ char *createCommand(char *html_data)
         exit(EXIT_FAILURE);
 }
 
+// Profiler
+void __attribute__((no_instrument_function)) __cyg_profile_func_enter(void *this_fn, void *call_site)
+{ /* Our manipulation */ }
+
 // libcli (server)
 void *my_libcli(void *arg)
 {
