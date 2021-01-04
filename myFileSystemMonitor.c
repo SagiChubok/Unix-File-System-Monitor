@@ -33,6 +33,31 @@ int cmd_backtrace(struct cli_def *cli, const char *command, char *argv[], int ar
     return CLI_OK;
 }
 
+void *my_backtrace(void *arg)
+{
+    struct cli_def *cli = (struct cli_def *)arg;
+
+    int j, nptrs;
+    void *buffer[100];
+    char **strings;
+
+    nptrs = backtrace(buffer, 100);
+    cli_print(cli, "backtrace() returned %d addresses\n", nptrs);
+
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings == NULL)
+    {
+        perror("backtrace_symbols");
+        exit(EXIT_FAILURE);
+    }
+
+    for (j = 0; j < nptrs; j++)
+        cli_print(cli, "%s\n", strings[j]);
+
+    free(strings);
+    return NULL;
+}
+
 // String sub-functions
 char **str_splitter(char *str, size_t *size)
 {
